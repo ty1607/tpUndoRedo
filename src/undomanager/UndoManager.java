@@ -84,6 +84,10 @@ public class UndoManager {
         }
     }
     
+    public void undoMultiple(int min, int max){
+        
+    }
+    
     public void redo(){
         switch (event){
             case Idle : 
