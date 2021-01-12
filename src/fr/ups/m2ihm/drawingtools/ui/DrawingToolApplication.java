@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.swing.JToggleButton;
 import javax.swing.event.MouseInputAdapter;
+import undomanager.UndoManager;
 
 /**
  *
@@ -71,19 +72,23 @@ public class DrawingToolApplication extends javax.swing.JFrame {
      * Stores the corresponding selecting toggle button for each possible tool.
      */
     private final Map<ToolManager.Tool, JToggleButton> toolSelectors;
+    
+    private UndoManager undoManager;
 
     /**
      * Creates new form DrawingToolApplication.
      */
     public DrawingToolApplication() {
         initComponents();
-        model = new DrawingModel();
+        this.undoManager = new UndoManager();
+        model = new DrawingModel(undoManager);
         model.addView(new DrawingViewImpl());
         tool = new ToolManager(model);
         tool.addDrawingController(DrawingControllerImpl.getInstance());
         DrawingControllerImpl.getInstance().setTool(tool);
         tool.addDrawingToolView(new DrawingToolViewImpl());
 
+        
         drawingZone.addMouseListener(DrawingControllerImpl.getInstance());
         drawingZone.addMouseMotionListener(DrawingControllerImpl.getInstance());
         drawingZone.addKeyListener(DrawingControllerImpl.getInstance());
@@ -95,6 +100,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
             }
 
         });
+        
 
         toolSelectors = new HashMap<>(ToolManager.Tool.values().length);
         toolSelectors.put(ToolManager.Tool.LINE, tglLine);
@@ -116,6 +122,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         tglLine = new javax.swing.JToggleButton();
         tglOval = new javax.swing.JToggleButton();
+        drawingZone = new fr.ups.m2ihm.drawingtools.ui.DrawingZone();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu2 = new javax.swing.JMenu();
         undoMenuItem = new javax.swing.JMenuItem();
@@ -158,6 +165,17 @@ public class DrawingToolApplication extends javax.swing.JFrame {
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
         );
 
+        javax.swing.GroupLayout drawingZoneLayout = new javax.swing.GroupLayout(drawingZone);
+        drawingZone.setLayout(drawingZoneLayout);
+        drawingZoneLayout.setHorizontalGroup(
+            drawingZoneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 440, Short.MAX_VALUE)
+        );
+        drawingZoneLayout.setVerticalGroup(
+            drawingZoneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
         jMenu2.setText("Edit");
 
         undoMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
@@ -188,11 +206,17 @@ public class DrawingToolApplication extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(464, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(drawingZone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(drawingZone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -208,13 +232,16 @@ public class DrawingToolApplication extends javax.swing.JFrame {
 
     private void undoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undoMenuItemActionPerformed
         // TODO add your handling code here:
+        undoManager.undo();
     }//GEN-LAST:event_undoMenuItemActionPerformed
 
     private void redoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redoMenuItemActionPerformed
         // TODO add your handling code here:
+        undoManager.redo();
     }//GEN-LAST:event_redoMenuItemActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private fr.ups.m2ihm.drawingtools.ui.DrawingZone drawingZone;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
@@ -349,6 +376,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
                         DEFAULT_SHAPE_COLOR,
                         DEFAULT_SHAPE_STROKE);
             });
+            
         }
     }
 
@@ -364,7 +392,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
 
         @Override
         public void ghostCreated(final Shape shape) {
-            assert (Objects.nonNull(shape));
+           assert (Objects.nonNull(shape));
             if (Objects.nonNull(currentGhostShape)) {
                 drawingZone.removeShape(
                         currentGhostShape,
@@ -375,11 +403,12 @@ public class DrawingToolApplication extends javax.swing.JFrame {
             drawingZone.addShape(currentGhostShape,
                     DEFAULT_GHOST_COLOR,
                     DEFAULT_GHOST_STROKE);
+
         }
 
         @Override
         public void ghostChanged(final Shape shape) {
-            assert (Objects.nonNull(shape));
+           assert (Objects.nonNull(shape));
             if (Objects.nonNull(currentGhostShape)) {
                 drawingZone.removeShape(currentGhostShape,
                         DEFAULT_GHOST_COLOR,
@@ -389,16 +418,18 @@ public class DrawingToolApplication extends javax.swing.JFrame {
             drawingZone.addShape(currentGhostShape,
                     DEFAULT_GHOST_COLOR,
                     DEFAULT_GHOST_STROKE);
+
         }
 
         @Override
         public void ghostRemoved(final Shape shape) {
-            if (Objects.nonNull(currentGhostShape)) {
+           if (Objects.nonNull(currentGhostShape)) {
                 drawingZone.removeShape(currentGhostShape,
                         DEFAULT_GHOST_COLOR,
                         DEFAULT_GHOST_STROKE);
             }
             currentGhostShape = null;
+
         }
     }
 }

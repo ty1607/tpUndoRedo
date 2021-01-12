@@ -23,12 +23,12 @@ public class AddShapeCommand implements UndoableCommand{
     
     @Override
     public void execute(){
-        
+        receiver.addShapeForReal(shape);
     }
     
     @Override
     public void undo(){
-        
+        receiver.removeShapeForReal(shape);
     }
     
 }

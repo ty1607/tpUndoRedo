@@ -8,6 +8,7 @@ package fr.ups.m2ihm.drawingtools.drawingmodel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import undomanager.UndoManager;
 import undomanager.UndoableCommand;
 
 /**
@@ -32,12 +33,19 @@ public class DrawingModel {
      * Set of views (MVC convention).
      */
     private final List<DrawingView> views;
+    
+    /**
+     * 
+     */
+    private UndoManager undoManager;
 
     /**
      * Prepare the handler of drawings. This class behaves as a model (MVC
      * convention).
+     * @param undoManager 
      */
-    public DrawingModel() {
+    public DrawingModel(UndoManager undoManager) {
+        this.undoManager = undoManager;
         this.shapes = new ArrayList<>(DEFAULT_SHAPE_CAPACITY);
         this.views = new ArrayList<>(DEFAULT_NUMBER_OF_VIEWS);
     }
@@ -66,9 +74,9 @@ public class DrawingModel {
      * @param shape the to be added.
      */
     public final void addShape(final Shape shape) {
-        //shapes.add(shape);
-        //fireModelChanged();
         UndoableCommand command = new AddShapeCommand(this, shape);
+        command.execute();
+        undoManager.registerCommand(command);
         
     }
     
@@ -95,8 +103,7 @@ public class DrawingModel {
      * @param shape the to be removed.
      */
     public final void removeShape(final Shape shape) {
-        shapes.remove(shape);
-        fireModelChanged();
+        undoManager.undo();
     }
 
     /**
