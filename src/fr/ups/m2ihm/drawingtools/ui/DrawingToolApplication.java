@@ -275,9 +275,9 @@ public class DrawingToolApplication extends javax.swing.JFrame {
 
     private void undoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undoButtonActionPerformed
         // TODO add your handling code here:
-        int minValue = Integer.getInteger(this.minValue.getText());
-        int maxValue = Integer.getInteger(this.maxValue.getText());
-        undoManager.undo();
+        int minValue = Integer.parseInt(this.minValue.getText());
+        int maxValue = Integer.parseInt(this.maxValue.getText());
+        undoManager.undoMultiple(minValue, maxValue);
         
     }//GEN-LAST:event_undoButtonActionPerformed
 
