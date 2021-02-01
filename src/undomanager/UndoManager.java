@@ -60,7 +60,7 @@ public class UndoManager {
                 break;
             case UndoOnly : 
                 if (availableUndo.size() > 1){
-                    action6();
+                    action5();
                     event = Events.UndoRedoable;
                 }
                 else if (availableUndo.size() == 1){
@@ -73,7 +73,7 @@ public class UndoManager {
                 break;
             case UndoRedoable : 
                 if (availableUndo.size() > 1){
-                    action6();
+                    action5();
                     event = Events.UndoRedoable;
                 }
                 else if (availableUndo.size() == 1){
@@ -85,7 +85,45 @@ public class UndoManager {
     }
     
     public void undoMultiple(int min, int max){
-        
+        switch (event){
+            case Idle : 
+                //impossible
+                break;
+            case UndoOnly : 
+                if (availableUndo.size() > 1){
+                    
+                    if (max - min < availableUndo.size()){
+                        action7( min, max);
+                        event = Events.UndoRedoable;
+                    } else if (max-min == availableUndo.size()){
+                        action6();
+                        event = Events.RedoOnly;
+                    }
+                }
+                else if (availableUndo.size() == 1){
+                    action5();
+                    event = Events.RedoOnly;
+                }
+                break;
+            case RedoOnly : 
+                //impossible
+                break;
+            case UndoRedoable : 
+                if (availableUndo.size() > 1){
+                   if (max - min < availableUndo.size()){
+                        action7( min, max);
+                        event = Events.UndoRedoable;
+                    } else if (max-min == availableUndo.size()){
+                        action6();
+                        event = Events.RedoOnly;
+                    }
+                }
+                else if (availableUndo.size() == 1){
+                    action5();
+                    event = Events.RedoOnly;
+                }
+                break;
+        }
     }
     
     public void redo(){
@@ -148,9 +186,25 @@ public class UndoManager {
     }
     
     public void action6(){
-        UndoableCommand command = availableUndo.remove(availableUndo.size()-1);
+        
+        //Faire boucle qui boucle sur les valeurs entre max et min pour supprimer tous les elements
+        for (int i = availableUndo.size()-1; i <= 0; i-- ){
+            UndoableCommand command = availableUndo.remove(i);
+            command.undo();
+            availableRedo.add(command);
+            
+        }
+    }
+    
+    public void action7(int min, int max){
+        
+        //Faire boucle qui boucle sur les valeurs entre max et min pour supprimer tous les elements
+        for (int i = max; i >= min; i-- ){
+            
+        UndoableCommand command = availableUndo.remove(i-1);
         command.undo();
         availableRedo.add(command);
+        }
     }
     
 }
